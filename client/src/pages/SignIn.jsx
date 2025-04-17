@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 "use client"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
@@ -12,6 +12,9 @@ import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Formfield } from '../components/Formfield'
 import { useNavigate } from 'react-router-dom'
+import { signInWithEmailAndPassword } from 'firebase/auth'
+import { auth } from '../../Firebase/Client'
+import axios from 'axios'
 
 const signinformSchema=()=>{
     return z.object({
@@ -25,27 +28,49 @@ const signinformSchema=()=>{
 }
 
 function SignIn() {
+  const [loading, setloading] = useState(false);
   const navigate=useNavigate();
     const formschema=signinformSchema();
     // 1. Define your form.
   const form = useForm({
     resolver: zodResolver(formschema),
     defaultValues: {
-      name: "",
       email:'',
       password:"",
     },
   })
  
   // 2. Define a submit handler.
-  function onSubmit(values) {
+  async function onSubmit(values) {
     try {
-        console.log(values.email);
+      setloading(true);
+      const {email,password}=values;
+        //  user sign in using firbase client sdk
+         const userCredential=await signInWithEmailAndPassword(auth,email,password);
+
+         const idToken=await userCredential.user.getIdToken();
+
+         if(!idToken){
+            toast.error("Invalid Credentials");
+            return;
+         }
+       
+       const result=await axios.post(`${import.meta.env.VITE_BACKEND_BASE_URL}/auth/signin`,{email,idToken},{withCredentials:true});
+
+       if(!result.data.success){
+        toast.error("Invalid Credentials"); 
+        setloading(false);
+        return;
+       }
+      console.log(result.data);
+       
         form.reset();
+          setloading(false);
         toast.success("Signed in successfully!");
         navigate('/home');
     } catch (error) {
          console.log(error);
+          setloading(false);
          toast.error("Fill All The Necessary Fields");
          
     }
@@ -77,7 +102,20 @@ function SignIn() {
             type='password'
             />
             
-        <Button className="btn mb-4 hover:animate-in hover:shadow-accent-foreground" type="submit">Create an Account</Button>
+        <Button 
+          className="btn mb-4 hover:animate-in hover:shadow-accent-foreground w-full" 
+          type="submit"
+          disabled={loading}
+        >
+          {loading ? (
+            <div className="flex items-center justify-center gap-2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+              <span>Signing In...</span>
+            </div>
+          ) : (
+            'Sign In'
+          )}
+        </Button>
       </form>
     </Form>    
     <p className='text-base-100 text-center'>Don't have an account? <Link to="/signup" className='text-blue-500 underline font-bold'>Sign Up</Link></p>

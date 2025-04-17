@@ -1,11 +1,11 @@
-import React from 'react'
+import React, { useState } from 'react'
 "use client"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
 import {
   Form,
 } from "@/components/ui/form"
-
+import axios from 'axios';
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { Link } from 'react-router-dom'
@@ -17,6 +17,9 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 
 
 const signupformSchema=()=>{
+
+  
+
   return z.object({
   name: z.string().min(2, {
       message: "Name must be at least 2 characters.",
@@ -31,6 +34,7 @@ const signupformSchema=()=>{
 }
 import { useNavigate } from 'react-router-dom'
 function SignUp() {
+  const [loading, setloading] = useState(false);
   const navigate=useNavigate();
   const formschema=signupformSchema();
   // 1. Define your form.
@@ -46,35 +50,49 @@ function SignUp() {
   // 2. Define a submit handler.
   async function onSubmit(values) {
     try {
+      setloading(true);
         const {name,email,password}=values;
         // user creation in firebase auth
+        
         const userCredentials=await createUserWithEmailAndPassword(auth,email,password);
+        
         // add user to the firstore
         const user={
+          uid:userCredentials.user.uid,
           name:name,
           email:email,
-          uid:userCredentials.user.id
+          
         }
-        const result=await axios.post(`${import.meta.env.BACKEND_BASE_URL}/auth/signup`,user);
+        const result=await axios.post(`${import.meta.env.VITE_BACKEND_BASE_URL}/auth/signup`,user
+          ,
+    { withCredentials: true }
+        );
+        console.log(result);
+        if (!result.data?.success) {
+          toast.error(result.data?.message);
+          setloading(false);
+        }
 
-        if(!result?.success){
-          toast.error(result?.message);
-          return;
-        }
         const idToken = await userCredentials.user.getIdToken();
-        const sessionResult = await setSessionCookie(idToken);
-        if(!sessionResult.success) {
+          console.log(idToken);
+        const sessionResult = await axios.post(`${import.meta.env.VITE_BACKEND_BASE_URL}/auth/session`,{idToken},{ withCredentials: true });
+
+        if(!sessionResult.data.success) {
           toast.error('Failed to create session');
+          setloading(false);
           return;
         }
 
         form.reset();
+        setloading(false);
         toast.success("Account Created  successfully!");
         navigate('/home');
 
     } catch (error) {
          console.log(error);
-         toast.error("Fill All The Necessary Fields");
+         setloading(false);
+         toast.error(error.message);
+         ;
          
     }
   }
@@ -83,7 +101,7 @@ function SignUp() {
     <div className='auth-layout flex-col gap-10'>
         
         <div className=' card-border  *:lg:min-w-[560px]'>
-        <div clasName="flex flex-col gap-6 card py-14 px-10">
+        <div className="flex flex-col gap-6 card py-14 px-10">
             <div className='flex flex-row gap-2 justify-center'>
             <img src="/logo.svg" alt="" height={32} width={38} /> 
             <h2 className='text-primary-100'>Prep Wise</h2>
@@ -111,7 +129,17 @@ function SignUp() {
             type='password'
             />
             
-        <Button className="btn mb-4 hover:animate-in hover:shadow-accent-foreground" type="submit">Create an Account</Button>
+        <Button className="btn mb-4 hover:animate-in hover:shadow-accent-foreground" 
+        disabled={loading} type="submit">
+                    {loading ? (
+            <div className="flex items-center justify-center gap-2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+              <span>Signing In...</span>
+            </div>
+          ) : (
+            'Sign In'
+          )}
+          </Button>
       </form>
     </Form>    
     <p className='text-base-100 text-center'>Already have an account? <Link to="/signin"
