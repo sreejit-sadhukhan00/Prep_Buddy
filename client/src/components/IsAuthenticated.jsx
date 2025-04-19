@@ -11,7 +11,7 @@ function IsAuthenticated() {
         const checkAuth = async () => {
           try {
             const res = await axios.get(`${import.meta.env.VITE_BACKEND_BASE_URL}/auth/verify`, {
-              withCredentials: true, // 🔥 VERY IMPORTANT to include cookies
+              withCredentials: true,
             });
             if(res.data.success){
               setIsAuthenticated(true);

@@ -10,6 +10,7 @@ import { Toaster } from './components/ui/sonner';
 import UserHome from './pages/UserHome';
 import UserNav from './components/UserNav';
 import IsAuthenticated from './components/IsAuthenticated';
+import Interview from './pages/Interview';
 function App() {
   const [count, setCount] = useState(0)
 
@@ -24,6 +25,7 @@ function App() {
       <Route element={<UserNav/>}> 
       <Route element={<IsAuthenticated/>}>
       <Route path="/home" element={<UserHome/>} />
+      <Route path="/interview" element={<Interview/>} />
       </Route>
       
           </Route>
