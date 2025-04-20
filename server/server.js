@@ -11,10 +11,14 @@ const app = express();
 const isDevelopment = process.env.NODE_ENV !== 'production';
 const corsOrigin = isDevelopment ? 'http://localhost:5173' : 'https://prepwise-self.vercel.app';
 
+
+
 app.use(cors({
   origin: corsOrigin,
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['set-cookie']
 }));
 
 app.use(express.json());
