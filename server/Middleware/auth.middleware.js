@@ -61,9 +61,10 @@ import { auth, db } from "../Firebase/admin.js";
       const options = {
         maxAge: expiresIn,
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict',
-        domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : 'localhost'
+        secure: true, // Always true for production
+        sameSite: 'None', // Required for cross-domain cookies
+        path: '/',
+        // Remove domain setting to let browser handle it
       };
       
       res.cookie('session', sessionCookie, options);

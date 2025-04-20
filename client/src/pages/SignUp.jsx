@@ -75,7 +75,9 @@ function SignUp() {
 
         const idToken = await userCredentials.user.getIdToken();
           console.log(idToken);
-        const sessionResult = await axios.post(`${import.meta.env.VITE_BACKEND_BASE_URL}/auth/session`,{idToken},{ withCredentials: true });
+        const sessionResult = await axios.post(`${import.meta.env.VITE_BACKEND_BASE_URL}/auth/session`,{idToken},{ withCredentials: true,headers: {
+          'Content-Type': 'application/json',
+        } });
 
         if(!sessionResult.data.success) {
           toast.error('Failed to create session');

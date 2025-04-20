@@ -55,7 +55,9 @@ function SignIn() {
             return;
          }
        
-       const result=await axios.post(`${import.meta.env.VITE_BACKEND_BASE_URL}/auth/signin`,{email,idToken},{withCredentials:true});
+       const result=await axios.post(`${import.meta.env.VITE_BACKEND_BASE_URL}/auth/signin`,{email,idToken},{withCredentials:true,headers: {
+        'Content-Type': 'application/json',
+      }});
 
        if(!result.data.success){
         toast.error("Invalid Credentials"); 
