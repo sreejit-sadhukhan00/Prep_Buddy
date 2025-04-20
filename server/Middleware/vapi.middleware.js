@@ -14,7 +14,7 @@ export const generate=async(req,res)=>{
 }
 
 export const sendResponseFromGemini=async(req,res)=>{
-    const {type,role,level,techstack,amount,userid}=req.body;
+    const {role,type,level,techstack,amount,userid}=req.body;
 
     try {
         const result=await generateText({
