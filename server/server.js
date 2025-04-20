@@ -16,10 +16,10 @@ app.use(cors({
   
 
     import authRoutes from "./Routes/auth.routes.js";
-
+    import vapiRoutes from "./Routes/vapi.routes.js";
 
      app.use('/api/auth',authRoutes);
-  
+     app.use('/api/vapi',vapiRoutes);
   const PORT = process.env.PORT || 3001;
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

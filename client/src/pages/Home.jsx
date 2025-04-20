@@ -1,8 +1,14 @@
 import React, { useEffect } from 'react';
 import Nav from '../components/Nav';
 import { motion } from 'framer-motion';
-
+import { useNavigate } from 'react-router-dom';
+useNavigate
 function Home() {
+  const navigate = useNavigate();
+const  onclickHandler=()=>{
+     navigate('/signin');
+}
+
   // Fade-in animation variants
   const fadeIn = {
     hidden: { opacity: 0 },
@@ -41,6 +47,7 @@ function Home() {
               Prepare effectively for your next tech interview with our comprehensive resources, practice questions, and expert strategies.
             </p>
             <motion.button 
+            onClick={onclickHandler}
               className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-medium py-3 px-6 rounded-lg transition-all shadow-lg hover:shadow-xl"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
