@@ -21,7 +21,13 @@ app.use(cors({
   exposedHeaders: ['Set-Cookie']
 }));
 
-app.use(express.json());
+app.use(express.json({ 
+  verify: (req, res, buf) => {
+    req.rawBody = buf;
+  },
+  limit: '10mb'
+}));
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
   
 import authRoutes from "./Routes/auth.routes.js";
