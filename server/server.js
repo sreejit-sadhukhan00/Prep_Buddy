@@ -9,9 +9,9 @@ const app = express();
 
 // Determine environment and set appropriate origin
 const isDevelopment = process.env.NODE_ENV !== 'production';
-const corsOrigin = isDevelopment ? 'http://localhost:5173' : 'https://prepwise-self.vercel.app';
-
-
+const corsOrigin = isDevelopment 
+  ? ['http://localhost:5173', 'https://api.vapi.ai'] 
+  : ['https://prepwise-self.vercel.app', 'https://api.vapi.ai'];
 
 app.use(cors({
   origin: corsOrigin,

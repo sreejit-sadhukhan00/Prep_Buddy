@@ -15,7 +15,13 @@ export const generate=async(req,res)=>{
 
 export const sendResponseFromGemini=async(req,res)=>{
     const {role,type,level,techstack,amount,userid}=req.body;
-
+    if (!role || !type || !level || !techstack || !userid) {
+        return res.status(400).json({
+            success: false,
+            message: 'Missing required fields',
+            receivedData: {role, type, level, techstack, userid} // For debugging
+        });
+    }
     try {
         const result=await generateText({
             model:google('gemini-2.0-flash-001'),
