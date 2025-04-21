@@ -19,6 +19,7 @@ export const sendResponseFromGemini = async(req, res) => {
     // Check if this is a Vapi request
     if (req.body && req.body.message && req.body.message.call && req.body.message.call.parameters) {
         params = req.body.message.call.parameters;
+        console.log("Received parameters from Vapi:", params);
     } 
     // Otherwise assume direct request from Postman or similar client
     else {
