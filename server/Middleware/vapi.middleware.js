@@ -1,4 +1,3 @@
-
 import { auth, db } from "../Firebase/admin.js";
 import { generateText } from "ai";
 import { createGoogleGenerativeAI} from "@ai-sdk/google";
@@ -13,8 +12,21 @@ export const generate=async(req,res)=>{
    })
 }
 
-export const sendResponseFromGemini=async(req,res)=>{
-    const {role,type,level,techstack,amount,userid}=req.body;
+export const sendResponseFromGemini = async(req, res) => {
+    // Handle both direct body (from Postman) and Vapi message structure
+    let params = {};
+    
+    // Check if this is a Vapi request
+    if (req.body && req.body.message && req.body.message.call && req.body.message.call.parameters) {
+        params = req.body.message.call.parameters;
+    } 
+    // Otherwise assume direct request from Postman or similar client
+    else {
+        params = req.body;
+    }
+    
+    const {role, type, level, techstack, amount, userid} = params;
+    
     if (!role || !type || !level || !techstack || !userid) {
         return res.status(400).json({
             success: false,
@@ -22,10 +34,11 @@ export const sendResponseFromGemini=async(req,res)=>{
             receivedData: {role, type, level, techstack, userid} // For debugging
         });
     }
+    
     try {
-        const result=await generateText({
-            model:google('gemini-2.0-flash-001'),
-            prompt:`You are an AI assistant designed strictly to generate interview questions only.
+        const result = await generateText({
+            model: google('gemini-2.0-flash-001'),
+            prompt: `You are an AI assistant designed strictly to generate interview questions only.
 
 Do not provide answers or explanations.
 
@@ -51,21 +64,21 @@ If inputs are valid, then:
 
 Only return the array. Do not say anything else.`,
         });
-        const rawtext=result.text.trim();
-       const parsedQuestions = JSON.parse(rawtext);
-        const interview={
-            role,type,level,techstack: techstack.split(',').map(t => t.trim()),
-            questions:parsedQuestions,
-            userId:userid,
-            finalized:true,
-            createdAt:new Date().toISOString(),
+        const rawtext = result.text.trim();
+        const parsedQuestions = JSON.parse(rawtext);
+        const interview = {
+            role, type, level, techstack: techstack.split(',').map(t => t.trim()),
+            questions: parsedQuestions,
+            userId: userid,
+            finalized: true,
+            createdAt: new Date().toISOString(),
         }
 
         await db.collection("interviews").add(interview);
         return res.status(200).json({
-            success:true,
-            message:"Interview questions generated successfully",
-            data:interview,
+            success: true,
+            message: "Interview questions generated successfully",
+            data: interview,
         })
     } catch (error) {
         console.error("Error sending response from Gemini:", error);

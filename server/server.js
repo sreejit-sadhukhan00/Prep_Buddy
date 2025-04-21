@@ -35,3 +35,4 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`CORS configured for origin: ${corsOrigin}`);
 });
+
