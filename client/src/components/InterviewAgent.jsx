@@ -1,28 +1,98 @@
 import { div } from "framer-motion/client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { cn } from "../lib/utils";
+import vapi from "../lib/vapi.sdk.js";
+import { useNavigate } from "react-router-dom";
 
-function InterviewAgent({ username, userId, type }) {
+function InterviewAgent({ username, userid, type })
+
+
+{
+  const navigate=useNavigate();
+
   const call_Status = {
     INACTIVE: "INACTIVE",
     CONNECTING: "CONNECTING",
     ACTIVE: "ACTIVE",
     FINISHED: "FINISHED",
   };
-  const messages = [
-    "Hi there! How can I help you today?",
-    "Can you tell me more about your experience?",
-    "What are your strengths and weaknesses?",
-    "Why do you want to work with us?",
-    "How do you handle tight deadlines?",
-    "Tell me about a challenge you overcame.",
-    "Do you prefer working in a team or alone?",
-    "Where do you see yourself in five years?",
-    "Where do you see yourself in five years?",
-  ];
-  const lastmessage = messages[messages.length - 1];
-  const [isSpeaking, setisSpeaking] = useState(true);
-  const [callStatus, setcallStatus] = useState(call_Status.CONNECTING);
+  const [isSpeaking, setisSpeaking] = useState(false);
+  const [callStatus, setcallStatus] = useState(call_Status.INACTIVE);
+  const [messages,setmessages]=useState([]);
+
+     useEffect(() => {
+         const onCallStart=()=>{
+          setcallStatus(call_Status.ACTIVE);
+         }
+          const onCallEnd=()=>{
+            setcallStatus(call_Status.FINISHED);
+          }
+          const onMessageReceived=(message)=>{
+            const newmessage={
+              role:message.role,
+              content:message.transcript,
+
+            }
+            setmessages((prev)=>[...prev,newmessage]);
+          }
+
+         const onSpeechStart=()=>{
+          setisSpeaking(true);
+         } 
+          const onSpeechEnd=()=>{
+            setisSpeaking(false);
+          }
+
+          const onError=(error)=>{
+            console.log("Error",error);
+          }
+
+          vapi.on('call-start',onCallStart);
+          vapi.on('call-end',onCallEnd);
+          vapi.on('message',onMessageReceived);
+          vapi.on('speech-start',onSpeechStart);
+          vapi.on('speech-end',onSpeechEnd);
+          vapi.on('error',onError);
+
+
+          return()=>{
+            vapi.off('call-start',onCallStart);
+          vapi.off('call-end',onCallEnd);
+          vapi.off('message',onMessageReceived);
+          vapi.off('speech-start',onSpeechStart);
+          vapi.off('speech-end',onSpeechEnd);
+          vapi.off('error',onError);
+          }
+     }, [])
+     
+  useEffect(() => {
+    if(callStatus===call_Status.FINISHED){
+      navigate('/home');
+    }
+    
+  }, [messages,callStatus,type,userid]);
+  
+
+  const handleCall=async()=>{
+        setcallStatus(call_Status.CONNECTING);
+
+        await vapi.start(import.meta.env.VITE_VAPI_ASSISTANT_ID, {
+          variableValues: {
+            username: username,
+            userid: userid,
+          }
+        });
+  }
+
+  const handleDisconnect=async()=>{
+          setcallStatus(call_Status.FINISHED);
+          vapi.stop();
+  }
+
+  const latestmessage=messages[messages.length-1]?.content;
+
+  const isCallInactiveOrFinished=callStatus===call_Status.INACTIVE || callStatus===call_Status.FINISHED;
+
   return (
     <>
       <div className="call-view mb-4">
@@ -60,9 +130,9 @@ function InterviewAgent({ username, userId, type }) {
                 "transition-opacity duration-500",
                 "animate-fadeIn"
               )}
-              key={lastmessage}
+              key={latestmessage}
             >
-              {lastmessage}
+              {latestmessage}
             </p>
           </div>
         </div>
@@ -71,24 +141,29 @@ function InterviewAgent({ username, userId, type }) {
       {/* button creation  */}
       <div className="w-full flex justify-center">
         {callStatus !== call_Status.ACTIVE ? (
-          <button className="btn-call relative w-24 h-12 flex items-center justify-center">
+          <button
+          onClick={handleCall}
+          className="btn-call relative w-24 h-12 flex items-center justify-center">
             {/* PING ANIMATION SPAN */}
-            <span
-              className={`absolute rounded-full opacity-75 animate-ping w-16 h-16 border-4 border-zinc-500 ${
-                callStatus !== call_Status.CONNECTING ? "hidden" : ""
-              }`}
-            />
-
-            {/* BUTTON LABEL */}
-            <span>
-              {callStatus === call_Status.INACTIVE ||
-              callStatus === call_Status.FINISHED
-                ? "Call"
-                : ". . ."}
-            </span>
+            <span className="relative flex items-center justify-center">
+  {/* Animated Dots (Ping style) */}
+  {callStatus === call_Status.CONNECTING ? (
+    <span className="flex gap-1">
+      <span className="w-2 h-2 bg-zinc-500 rounded-full animate-ping" />
+      <span className="w-2 h-2 bg-zinc-500 rounded-full animate-ping delay-200" />
+      <span className="w-2 h-2 bg-zinc-500 rounded-full animate-ping delay-400" />
+    </span>
+  ) : (
+    <span>
+      {isCallInactiveOrFinished
+        ? "Call"
+        : ". . ."}
+    </span>
+  )}
+</span>
           </button>
         ) : (
-          <button className="btn-disconnect">END</button>
+          <button onClick={handleDisconnect} className="btn-disconnect">END</button>
         )}
       </div>
     </>

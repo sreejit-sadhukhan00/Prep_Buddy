@@ -1,3 +1,5 @@
-import Vapi from '@vapi-ai/sdk';
+import Vapi from '@vapi-ai/web';
 
-export const vapi=new Vapi(import.meta.env.VAPI_WEB_TOKEN)
+const vapiInstance = new Vapi(import.meta.env.VITE_VAPI_WEB_TOKEN);
+
+export default vapiInstance;

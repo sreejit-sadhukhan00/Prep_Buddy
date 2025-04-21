@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { Outlet, useNavigate } from "react-router-dom";
+import { userDataContext } from "../context/Usercontext";
 
 
 function IsAuthenticated() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const {setUserData}=useContext(userDataContext);
     const navigate=useNavigate();
 
     useEffect(() => {
@@ -13,8 +15,8 @@ function IsAuthenticated() {
             const res = await axios.get(`${import.meta.env.VITE_BACKEND_BASE_URL}/auth/verify`, {
               withCredentials: true,
             });
-            console.log(res);
             if(res.data.success){
+              setUserData(res.data.data);
               setIsAuthenticated(true);
             }
             else{

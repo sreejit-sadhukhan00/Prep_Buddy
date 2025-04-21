@@ -1,11 +1,18 @@
-import React from 'react'
+import React, { useContext, useEffect } from 'react'
 import { Button } from '../components/ui/button'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion';
 import { dummyInterviews } from '../../constants';
 import InterviewCard from '../components/InterviewCard';
+import { userDataContext } from '../context/Usercontext';
 
 function UserHome() {
+  const {userData} = useContext(userDataContext);
+  useEffect(() => {
+     console.log("User Data:", userData);
+     }, [])
+  
+  
   return (
     <div className='max-w-6xl mx-auto sm:w-full '>
     <section className='card-cta flex justify-between items-center p-4'>

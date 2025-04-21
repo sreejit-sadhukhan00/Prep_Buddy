@@ -1,12 +1,14 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import InterviewAgent from '../components/InterviewAgent'
+import { userDataContext } from '../context/Usercontext';
 
 function Interview() {
+  const {userData} = useContext(userDataContext);
   return (
     <div className='max-w-6xl mx-auto'>
    
     <h3>Interview Generation</h3>
-        <InterviewAgent userName="user1" userId="user1" type="generate"/>
+        <InterviewAgent username={userData?.name} userid={userData?.uid} type="generate"/>
     </div>
   )
 }
