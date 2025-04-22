@@ -91,3 +91,66 @@ Only return the array. Do not say anything else.`,
 
     }
 }
+
+
+export const fetchinterview=async(req,res)=>{
+    const {user}=req.body;
+    if(!user){
+        return res.status(400).json({
+            success:false,
+            message:"user id is required"
+        })
+    }
+    const interview=await db.collection("interviews").
+    where("userId","==",user)
+    .orderBy("createdAt","desc")
+    .get();
+
+    if(interview.empty){
+        return res.status(200).json({
+            success:false,
+            message:"No interview found",
+            data:[]
+        })
+    }
+    const interviews=interview.docs.map((doc)=>({
+        id:doc.id,
+        ...doc.data(),
+    }));
+    return res.status(200).json({
+        success:true,
+        message:"Interviews fetched successfully",
+        data:interviews,
+    })
+}
+export const getLatestInterviews=async(req,res)=>{
+   const {userId,limit=20}=req.query;
+    if(!userId){
+        return res.status(400).json({
+            success:false,
+            message:"user id is required"
+        })
+    }
+    const interview=await db.collection("interviews")
+    .orderBy("createdAt","desc")
+    .where("finalized","==",true)
+    .where("userId","!=",userId)
+    .limit(limit)
+    .get();
+
+    if(interview.empty){
+        return res.status(404).json({
+            success:false,
+            message:"No interview found",
+        })
+    }
+    const interviews=interview.docs.map((doc)=>({
+        id:doc.id,
+        ...doc.data(),
+    }));
+    return res.status(200).json({
+        success:true,
+        message:"Interviews fetched successfully",
+        data:interviews,
+    })
+}

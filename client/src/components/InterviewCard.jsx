@@ -1,11 +1,12 @@
 
-import React from 'react'
+import React, { useContext } from 'react'
 import dayjs from 'dayjs';
 import { getrandomInterviewCover } from '../../constants';
 import { Button } from './ui/button';
 import { Link } from 'react-router-dom';
 import DisplayTechIcons from './DisplayTechIcons';
 import { motion } from 'framer-motion';
+import { InterviewdataContext } from '../context/Interviewcontext';
 
 function InterviewCard({interview}) {
     const feedback=null;
