@@ -1,6 +1,8 @@
 import { auth, db } from "../Firebase/admin.js";
-import { generateText } from "ai";
+import { generateObject, generateText } from "ai";
 import { createGoogleGenerativeAI} from "@ai-sdk/google";
+import  feedbackSchema from "../lib/Schema.js";
+
 const google = new createGoogleGenerativeAI({
     apiKey: process.env.GOOGLE_GEN_AI_API_KEY,
   });
@@ -181,3 +183,64 @@ export const getInterviewById=async(req,res)=>{
             data:interview
         })
     }
+
+
+export const  createFeedback=async(req,res)=>{
+    const {interviewid,userid,transcript}=req.query;
+     
+    try {
+        const formattedTranscript = transcript.map((sentence)=>(
+            `-${sentence.role}:${sentence.content}\n`
+        )).join('');
+
+        const {object}=await generateObject({
+            model:google('gemini-2.0-flash-001',{
+                structuredOutputs:false,
+            }),
+            schema:feedbackSchema,
+            prompt: `
+        You are an AI interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories. Be thorough and detailed in your analysis. Don't be lenient with the candidate. If there are mistakes or areas for improvement, point them out.
+        Transcript:
+        ${formattedTranscript}
+
+        Please score the candidate from 0 to 100 in the following areas. Do not add categories other than the ones provided:
+        - **Communication Skills**: Clarity, articulation, structured responses.
+        - **Technical Knowledge**: Understanding of key concepts for the role.
+        - **Problem-Solving**: Ability to analyze problems and propose solutions.
+        - **Cultural & Role Fit**: Alignment with company values and job role.
+        - **Confidence & Clarity**: Confidence in responses, engagement, and clarity.
+        `,
+      system:
+        "You are a professional interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories",
+        });
+
+      const   feedback=await db.collection('feedback').add({
+        interviewid,
+        userid,
+        totalScore,
+        catagoryScores,
+        strengths,
+        areasForImprovement,
+        finalAssessment,
+        createdAt:new Date().toISOString(),
+      });
+
+      if(!feedback){
+        return res.status(500).json({
+            success:false,
+            message:"Error in creating feedback",
+        })
+      }
+      return res.status(200).json({
+        success:true,
+        message:"Feedback created successfully",
+        data:feedback.id,
+      });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success:false,
+            message:"Error in creating feedback",
+        })
+    }
+}
