@@ -154,3 +154,30 @@ export const getLatestInterviews=async(req,res)=>{
         data:interviews,
     })
 }
+
+export const getInterviewById=async(req,res)=>{
+    const {id}=req.query;
+
+    if(!id){
+        return res.status(400).json({
+            success:false,
+            message:"Interview id is required"
+        })
+    }
+    const docRef = db.collection("interviews").doc(id);
+    const doc = await docRef.get();
+
+        if(doc.empty){
+            return res.status(404).json({
+                success:false,
+                message:"Interview not found",
+            })
+        }
+        const interview = doc.data();
+  console.log(interview)
+        return res.status(200).json({
+            success:true,
+            message:"Interview fetched successfully",
+            data:interview
+        })
+    }

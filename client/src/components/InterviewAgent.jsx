@@ -1,11 +1,11 @@
 import { div } from "framer-motion/client";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { cn } from "../lib/utils";
 import vapi from "../lib/vapi.sdk.js";
 import { useNavigate } from "react-router-dom";
+import { interviewer } from "../../constants/index.js";
 
-function InterviewAgent({ username, userid, type })
-
+function InterviewAgent({ username, userid, type,interviewid,questions })
 
 {
   const navigate=useNavigate();
@@ -63,11 +63,31 @@ function InterviewAgent({ username, userid, type })
           vapi.off('speech-end',onSpeechEnd);
           vapi.off('error',onError);
           }
-     }, [])
+     }, []);
      
+const handleGenerateFeedback=async(messages)=>{
+   console.log('generate feedback here')
+   const {success,id}={
+    success:true,
+    id:'feedback_id'
+   }
+// create server action to generate feedback
+   if(success && id){
+      navigate(`/interview/${interviewid}/feedback`)
+   }else{
+    console.log("Error in generating feedback");
+    navigate('/home')
+   }
+}
+
   useEffect(() => {
     if(callStatus===call_Status.FINISHED){
-      navigate('/home');
+      if(type==='generate'){
+        navigate('/home');
+      }else{
+        handleGenerateFeedback(messages);
+
+      }
     }
     
   }, [messages,callStatus,type,userid]);
@@ -76,12 +96,27 @@ function InterviewAgent({ username, userid, type })
   const handleCall=async()=>{
         setcallStatus(call_Status.CONNECTING);
 
-        await vapi.start(import.meta.env.VITE_VAPI_ASSISTANT_ID, {
-          variableValues: {
-            username: username,
-            userid: userid,
+        if(type==='generate'){
+          await vapi.start(import.meta.env.VITE_VAPI_ASSISTANT_ID, {
+            variableValues: {
+              username: username,
+              userid: userid,
+            }
+          });
+        }else{
+          let formattedquestions="";
+          if(questions){
+            formattedquestions=questions.map((question)=>`- ${question}`).join('\n')
           }
-        });
+        await vapi.start(interviewer,{
+          variableValues:{
+            questions:formattedquestions,
+          }
+        })
+
+
+        }
+        
   }
 
   const handleDisconnect=async()=>{

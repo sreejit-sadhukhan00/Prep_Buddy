@@ -5,7 +5,8 @@ import { motion } from 'framer-motion';
 import { div } from 'framer-motion/client';
 
 function DisplayTechIcons({Techstack}) {
-    const techIcons= getTechLogos(Techstack);
+  const safeTechstack = Array.isArray(Techstack) ? Techstack : [];
+    const techIcons= getTechLogos(safeTechstack);
   return (
     <div className='flex gap-2 items-center'>
         {techIcons.slice(0,2).map((tech, index) =>  
