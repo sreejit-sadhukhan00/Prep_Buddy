@@ -12,7 +12,7 @@ import UserNav from './components/UserNav';
 import IsAuthenticated from './components/IsAuthenticated';
 import Interview from './pages/Interview';
 import InterviewPage from './pages/InterviewPage';
-import Feedback from './pages/Feedback';
+import Feedback from './pages/Feedback.jsx';
 // dummy commit
 function App() {
   const [count, setCount] = useState(0)
