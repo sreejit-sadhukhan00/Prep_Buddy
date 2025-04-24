@@ -11,7 +11,7 @@ import UserHome from './pages/UserHome';
 import UserNav from './components/UserNav';
 import IsAuthenticated from './components/IsAuthenticated';
 import Interview from './pages/Interview';
-import InterviewPage from './pages/interviewPage';
+import InterviewPage from './pages/InterviewPage';
 import Feedback from './pages/Feedback';
 function App() {
   const [count, setCount] = useState(0)
