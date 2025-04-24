@@ -13,7 +13,8 @@ import IsAuthenticated from './components/IsAuthenticated';
 import Interview from './pages/Interview';
 import InterviewPage from './pages/InterviewPage';
 import Feedback from './pages/Feedback.jsx';
-// dummy commit
+import 'remixicon/fonts/remixicon.css';
+
 function App() {
   const [count, setCount] = useState(0)
 
@@ -30,7 +31,7 @@ function App() {
       <Route path="/home" element={<UserHome/>} />
       <Route path="/interview" element={<Interview/>} />
       <Route path="/interview/:id" element={<InterviewPage/>} />
-      <Route path="/interview/:id/feedback" element={<Feedback/>} />
+      <Route path="/interview/:interviewid/feedback" element={<Feedback/>} />
       </Route>
       
           </Route>

@@ -4,6 +4,7 @@ import { cn } from "../lib/utils";
 import vapi from "../lib/vapi.sdk.js";
 import { useNavigate } from "react-router-dom";
 import { interviewer } from "../../constants/index.js";
+import axios from "axios";
 
 function InterviewAgent({ username, userid, type,interviewid,questions })
 
@@ -67,11 +68,13 @@ function InterviewAgent({ username, userid, type,interviewid,questions })
      
 const handleGenerateFeedback=async(messages)=>{
    console.log('generate feedback here')
-   const {success,id}={
-    success:true,
-    id:'feedback_id'
-   }
-// create server action to generate feedback
+   const response=await axios.post(`${import.meta.env.VITE_BACKEND_BASE_URL}/vapi/createFeedback`,{
+      interviewid
+      ,userid
+      ,transcript:messages
+   })
+    const {success,id}=response.data;
+   console.log(success)
    if(success && id){
       navigate(`/interview/${interviewid}/feedback`)
    }else{
@@ -140,7 +143,7 @@ const handleGenerateFeedback=async(messages)=>{
               height={54}
               className="object-fit"
             />
-            {isSpeaking ? <span className="animate-speak" /> : null}
+            {isSpeaking && <span className="animate-speak" /> }
           </div>
           <h3>AI Interviewer</h3>
         </div>

@@ -141,4 +141,12 @@ const verifySession = async (req, res) => {
   }
 };
 
-  export{signUp,setSessionCookie,signIn,verifySession};
+
+const logout=async(req,res)=>{
+  res.clearCookie('session');
+  return res.status(200).json({
+    success: true,
+    message: 'Logged out successfully',
+  });
+}
+  export{signUp,setSessionCookie,signIn,verifySession,logout};

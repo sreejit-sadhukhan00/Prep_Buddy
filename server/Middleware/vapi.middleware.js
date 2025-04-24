@@ -185,19 +185,19 @@ export const getInterviewById=async(req,res)=>{
     }
 
 
-export const  createFeedback=async(req,res)=>{
-    const {interviewid,userid,transcript}=req.query;
-     
+export const createFeedback = async(req, res) => {
+    const {interviewid, userid, transcript} = req.body;
+    console.log("Transcript", transcript)
     try {
-        const formattedTranscript = transcript.map((sentence)=>(
+        const formattedTranscript = transcript.map((sentence) => (
             `-${sentence.role}:${sentence.content}\n`
         )).join('');
 
-        const {object}=await generateObject({
-            model:google('gemini-2.0-flash-001',{
-                structuredOutputs:false,
+        const {object} = await generateObject({
+            model: google('gemini-2.0-flash-001', {
+                structuredOutputs: false,
             }),
-            schema:feedbackSchema,
+            schema: feedbackSchema,
             prompt: `
         You are an AI interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories. Be thorough and detailed in your analysis. Don't be lenient with the candidate. If there are mistakes or areas for improvement, point them out.
         Transcript:
@@ -210,37 +210,73 @@ export const  createFeedback=async(req,res)=>{
         - **Cultural & Role Fit**: Alignment with company values and job role.
         - **Confidence & Clarity**: Confidence in responses, engagement, and clarity.
         `,
-      system:
-        "You are a professional interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories",
+            system:
+                "You are a professional interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories",
         });
 
-      const   feedback=await db.collection('feedback').add({
-        interviewid,
-        userid,
-        totalScore,
-        catagoryScores,
-        strengths,
-        areasForImprovement,
-        finalAssessment,
-        createdAt:new Date().toISOString(),
-      });
+        const {
+            totalScore,
+            categoryScores,
+            strengths,
+            areasForImprovement,
+            finalAssessment
+        } = object;
 
-      if(!feedback){
-        return res.status(500).json({
-            success:false,
-            message:"Error in creating feedback",
-        })
-      }
-      return res.status(200).json({
-        success:true,
-        message:"Feedback created successfully",
-        data:feedback.id,
-      });
+        const feedback = await db.collection('feedback').add({
+            interviewid,
+            userid,
+            totalScore,
+            categoryScores, // Note: fixed typo from 'catagoryScores' to 'categoryScores'
+            strengths,
+            areasForImprovement,
+            finalAssessment,
+            createdAt: new Date().toISOString(),
+        });
+
+        if(!feedback) {
+            return res.status(500).json({
+                success: false,
+                message: "Error in creating feedback",
+            })
+        }
+        return res.status(200).json({
+            success: true,
+            message: "Feedback created successfully",
+            id: feedback.id,
+        });
     } catch (error) {
         console.log(error);
         return res.status(500).json({
-            success:false,
-            message:"Error in creating feedback",
+            success: false,
+            message: "Error in creating feedback",
         })
     }
+}
+
+export const GetFeedback=async(req,res)=>{
+    const {interviewid,userId}=req.query;
+    if(!userId){
+        return res.status(400).json({
+            success:false,
+            message:"user id is required"
+        })
+    }
+    const feedback=await db.collection("feedback")
+    .where("interviewid","==",interviewid)
+    .where("userid","==",userId)
+    .limit(1)
+    .get();
+
+    if(feedback.empty){
+        return res.status(404).json({
+            success:false,
+            message:"No interview found",
+        })
+    }
+    const feedBack=feedback.docs[0];
+    return res.status(200).json({
+        success:true,
+        message:"Interviews fetched successfully",  
+        data:feedBack.data(),
+    })
 }
