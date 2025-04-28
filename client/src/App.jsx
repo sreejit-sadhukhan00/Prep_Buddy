@@ -23,18 +23,21 @@ function App() {
      <Toaster />
     <Routes>
       <Route path="/" element={<Home/>} />
-      <Route  element={<Layout/>}>
-      <Route path="/signin" element={<SignIn/>} />
-      <Route path="/signup" element={<SignUp/>} />
-      <Route element={<UserNav/>}> 
-      <Route element={<IsAuthenticated/>}>
-      <Route path="/home" element={<UserHome/>} />
-      <Route path="/interview" element={<Interview/>} />
-      <Route path="/interview/:id" element={<InterviewPage/>} />
-      <Route path="/interview/:interviewid/feedback" element={<Feedback/>} />
-      </Route>
-      
+      <Route element={<Layout/>}>
+        <Route path="/signin" element={<SignIn/>} />
+        <Route path="/signup" element={<SignUp/>} />
+        <Route element={<UserNav/>}> 
+          <Route element={<IsAuthenticated/>}>
+            <Route path="/home" element={<UserHome/>} />
           </Route>
+        </Route>
+      </Route>
+      <Route element={<IsAuthenticated/>}>
+        <Route element={<UserNav/>}>
+          <Route path="/interview" element={<Interview/>} />
+          <Route path="/interview/:id" element={<InterviewPage/>} />
+          <Route path="/interview/:interviewid/feedback" element={<Feedback/>} />
+        </Route>
       </Route>
     </Routes>
     </>

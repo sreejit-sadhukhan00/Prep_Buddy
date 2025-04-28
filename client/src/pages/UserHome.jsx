@@ -11,8 +11,6 @@ import { InterviewdataContext } from '../context/Interviewcontext';
  function UserHome() {
   const {interviewData, setInterviewData} = useContext(InterviewdataContext);
    const {userData} = useContext(userDataContext);
-    //  to get all the interviews
-      console.log("UserData",userData);
     const [latest, setlatest] = useState([])
     const [own, setown] = useState([])
 
@@ -37,7 +35,6 @@ import { InterviewdataContext } from '../context/Interviewcontext';
               }
             ),
           ]);
-          console.log(latestRes)
           // Combine and remove duplicates by id if needed
           setown( ownRes.data.data || []);
            setlatest( latestRes.data.data || []);
@@ -53,8 +50,6 @@ import { InterviewdataContext } from '../context/Interviewcontext';
       };
       fetchInterviews();
     }, []);
-
-    console.log("Latest",latest);
    const hasPastInterviews=own?.length>0;
    const hasUpcomingInterviews=latest?.length>0;
      
@@ -68,7 +63,7 @@ import { InterviewdataContext } from '../context/Interviewcontext';
     </p>
 
     <Button asChild className='btn-primary max-sm:w-full hover:animate-bounce duration-200'>
-      <Link to='/interview'>Start Interview</Link>
+      <Link to='/interview'>Create Interview</Link>
     </Button>
   </div>
 
@@ -100,7 +95,12 @@ import { InterviewdataContext } from '../context/Interviewcontext';
     {hasPastInterviews ?
     own.map((interview) => (
       <InterviewCard key={interview.id} interview={interview} />
-    )) : (<p className='text-2xl font-serif text-gray-600 '>You haven't taken any interviews yet</p>)}
+    )) : (<div className='flex flex-col '>
+       <p className='text-2xl font-serif text-gray-600 '>You haven't taken any interviews yet</p>
+      <p className='text-sm font-serif text-gray-700 '> Take an interview now and try to improve your skills . . .</p>
+    </div>
+
+    )}
 
     {/*  */}
   </div>
@@ -108,15 +108,18 @@ import { InterviewdataContext } from '../context/Interviewcontext';
 
 
    <section className='flex flex-col gap-6 mt-8'>
-       <h2 className='sm:ml-8'>Take an Interview</h2>
+       <h2 className='sm:ml-8 font-serif'>Take an Interview</h2>
               
        <div className='interviews-section flex flex-wrap justify-center items-center gap-4 sm:ml-0'>
        {hasUpcomingInterviews ?
     latest.map((interview) => (
       <InterviewCard key={interview.id} interview={interview} />
-    )) : (<p className='text-4xl '>You haven't taken any interviews yet</p>)}
+    )) : (<>
+        <p className='text-4xl '>You haven't taken any interviews yet</p>
+        
+    </>
+    )}
        </div>
-       <p>There are no new interviews available</p>
    </section>
     </div>
   )

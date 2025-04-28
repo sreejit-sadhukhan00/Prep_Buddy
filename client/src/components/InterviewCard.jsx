@@ -1,5 +1,5 @@
 
-import React, { useContext } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import dayjs from 'dayjs';
 import { getrandomInterviewCover } from '../../constants';
 import { Button } from './ui/button';
@@ -7,10 +7,40 @@ import { Link } from 'react-router-dom';
 import DisplayTechIcons from './DisplayTechIcons';
 import { motion } from 'framer-motion';
 import { InterviewdataContext } from '../context/Interviewcontext';
+import axios, { Axios } from 'axios';
+import { userDataContext } from '../context/Usercontext';
 
 function InterviewCard({interview}) {
-    const feedback=null;
-    const formatteddate=dayjs(feedback?.createdAt || interview.createdAt || Date.now()).format('MMM D,YYYY');
+const {userData}=useContext(userDataContext);
+  const [feedback, setFeedback] = useState(null);
+
+   useEffect(() => {
+     const fetchFeedback=async()=>{
+        try {
+          const res=await axios.get(`${import.meta.env.VITE_BACKEND_BASE_URL}/vapi/getfeedback`,{
+            params:{
+              interviewid:interview.id,
+              userId:userData?.uid,
+            },
+            withCredentials:true,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          })
+          if(res.data.success===true && res.data.message==="Interviews fetched successfully"){
+            setFeedback(res.data.data);
+          }
+          else{
+            setFeedback(null);
+          }
+        } catch (error) {
+        }
+     }
+     if (userData?.uid) {
+      fetchFeedback();
+    }
+   }, [userData, interview.id])
+   
      
   return (
     <motion.div
@@ -21,7 +51,7 @@ function InterviewCard({interview}) {
     //   scale: 1.05,
     //   duration:0.2
     // }}
-    className='card-border w-[360px] mmax-sm:w-full min-h-85 hover:scale-105 duration-200 cursor-pointer'>
+    className='card-border w-[360px] max-sm:w-full min-h-65 hover:scale-105 duration-200 cursor-pointer'>
         <div className='card-interview'>
 <div>
     <div className='absolute top-0 right-0 w-fit px-6 py-2 rounded-bl-lg bg-light-600 '>
@@ -38,7 +68,7 @@ function InterviewCard({interview}) {
     <div className='flex flex-row gap-5 mt-3'>
          <div className='flex flex-row gap-2'>
             <img src='/calendar.svg' alt="calender" width={22} height={22} />
-            <p className='text-md'>{formatteddate}</p>
+            <p className='text-md'>{}</p>
          </div>
 
          <div className='flex flex-row gap-2 items-center'>
@@ -54,8 +84,8 @@ function InterviewCard({interview}) {
           <DisplayTechIcons Techstack={interview.techstack}/>
 
           <Button className='btn-primary'>
-             <Link to={feedback? `interview/${interview.id}/feedback` : `/interview/${interview.id}`}>
-             {feedback?'View Feedback':'View Interview'}
+             <Link to={feedback? `/interview/${interview.id}/feedback` : `/interview/${interview.id}`}>
+             {feedback?'View Feedback':'Take Interview'}
              </Link>
             </Button>
        </div>
